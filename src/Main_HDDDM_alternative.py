@@ -1,16 +1,13 @@
 # IMPORTS
-
-import sklearn.metrics
-import pandas as pd
-import numpy as np
 from math import sqrt, floor
-from matplotlib import pyplot as plt
 from sklearn import ensemble
 from Distance import Distance
 from HDDDM_alternative_approach import HDDDM
 from Discretize import Discretizer
 from HDDDM_run import run_hdddm
-from util import visualize_drift, visualize_magnitude
+import pandas as pd
+
+
 
 # USER DEFINED SETTINGS
 
@@ -28,17 +25,17 @@ distance = Distance().hellinger_dist   # Distance metric to be used during drift
 
 # LOADING THE DATASET
 
-Dataset = '../data/SEA_Abrupt_high.csv'
-Data = pd.read_csv(Dataset, delimiter=',', index_col=0)
+dataset = '../data/SEA_Abrupt_high.csv'
+data = pd.read_csv(dataset, delimiter=',', index_col=0)
 target = 'y'    # Identify the target class
-
+dataset_name = dataset[dataset.rfind('/')+1:dataset.rfind('.')]
 # PREPROCESSING THE DATA
 
-Data2 = Data.copy()
+data2 = data.copy()
 discretize = Discretizer("equalquantile")  # Choose either "equalquantile" or "equalsize"
-discretize.fit(Data2, None, to_ignore= categorical_variables)   # Determine which variables need discretization.
+discretize.fit(data2, None, to_ignore= categorical_variables)   # Determine which variables need discretization.
 numerical_cols = discretize.numerical_cols
-binned_data, bins_output = discretize.transform(Data2, nr_bins)  # Bin numerical data.
+binned_data, bins_output = discretize.transform(data2, nr_bins)  # Bin numerical data.
 
 if to_keep == "all":
     detector = HDDDM(distance, categorical_variables + numerical_cols, target, gamma)
@@ -51,7 +48,7 @@ else:
 nr_of_batches = [500]
 original_batch_size = nr_of_batches[0]
 
-warning, drift, magnitude = run_hdddm(detector, nr_of_batches, Data, binned_data, warn_ratio, model=None, visualize=True, posterior=POSTERIOR)
+warning, drift, magnitude = run_hdddm(detector, nr_of_batches, data, binned_data, warn_ratio, model=model, visualize=True, posterior=POSTERIOR, save_figures= True, dataset_name=dataset_name)
 
 # # GRADUAL DRIFT TEST
 
@@ -59,7 +56,7 @@ warning, drift, magnitude = run_hdddm(detector, nr_of_batches, Data, binned_data
 #
 # pair_batch_sizes, pairs = get_drift_pairs(drift, original_batch_size)
 #
-# Batch = np.array_split(Data, original_batch_size)  # Batching the dataset.
+# Batch = np.array_split(data, original_batch_size)  # Batching the dataset.
 # new_data = prepare_data(Batch, pairs[0])
 # new_data_2 = new_data.copy()
 # new_binned_data, bins_output = discretize.transform(new_data_2, nr_bins)  # Bin numerical data.

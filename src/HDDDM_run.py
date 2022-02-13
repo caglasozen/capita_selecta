@@ -4,15 +4,28 @@ import numpy as np
 from math import sqrt, floor
 from matplotlib import pyplot as plt
 from sklearn import ensemble
-from Distance import Distance
-from HDDDM_alternative_approach import HDDDM
-from Discretize import Discretizer
-from util import visualize_drift, visualize_magnitude
+from src.Distance import Distance
+from src.HDDDM_alternative_approach import HDDDM
+from src.Discretize import Discretizer
+from src.util import visualize_drift, visualize_magnitude
 
 
-def run_hdddm(detector,nr_of_batches_list, Data, binned_data, warn_ratio,  model=None, visualize = False, posterior = False):
+def discretize_data(data, categorical_variables, nr_of_bins):
+    data2 = data.copy()
+    discretize = Discretizer("equalquantile")  # Choose either "equalquantile" or "equalsize"
+    discretize.fit(data2, None, to_ignore=categorical_variables)  # Determine which variables need discretization.
+    numerical_cols = discretize.numerical_cols
+    binned_data, bins_output = discretize.transform(data2, nr_of_bins)  # Bin numerical data.
+    return binned_data, numerical_cols
+
+def load_dataset(path):
+    data = pd.read_csv(path, delimiter=',', index_col=0)
+    dataset_name = path[path.rfind('/') + 1:path.rfind('.')]
+    return data, dataset_name
+
+def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = False, save_figures=False, dataset_name = ''):
     for nr_of_batches in nr_of_batches_list:
-        Batch = np.array_split(Data, nr_of_batches)  # Batching the dataset.
+        Batch = np.array_split(data, nr_of_batches)  # Batching the dataset.
 
         if model is not None:
             # INITIAL MODEL TRAINING
@@ -68,8 +81,15 @@ def run_hdddm(detector,nr_of_batches_list, Data, binned_data, warn_ratio,  model
 
         if visualize:
             if model is not None:
-                visualize_drift(accuracy, drift, warning, nr_of_batches, len(X_train))
-            visualize_magnitude(magnitude)
+                drift_fig = visualize_drift(accuracy, drift, warning, nr_of_batches, len(X_train))
+                if save_figures:
+                    fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "drift"+ str(posterior)
+                    drift_fig.savefig('out/' + fig_name + '.png')
+
+            mag_fig = visualize_magnitude(magnitude)
+            if save_figures:
+                fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "mag" + str(posterior)
+                mag_fig.savefig('out/' + fig_name + '.png')
 
         return warning, drift, magnitude
 

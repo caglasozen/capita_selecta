@@ -1,6 +1,5 @@
 from math import sqrt, log
 
-
 class Distance:
 
     def hellinger_dist(self, P, Q):

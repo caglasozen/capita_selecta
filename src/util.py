@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import pandas as pd
 
 ##Visualization Functions
 
@@ -16,7 +17,7 @@ def visualize_drift(acc, drift, warn, nr_of_batches, len_dataset):
     ax.legend()
     plt.title("Hyperplane - High (10%) Gradual Drift")
     plt.show()
-    #fig.savefig('Figures/Hyperplane_01_2.png')
+    return fig
 
 
 def visualize_magnitude(magn):
@@ -28,7 +29,7 @@ def visualize_magnitude(magn):
     ax.legend()
     plt.title("Hyperplane - High (10%) Gradual Drift")
     plt.show()
-    #fig.savefig('Figures/Hyperplane_01_magn_2.png')
+    return fig
 
 #Gradual Drift Utility Functions
 
@@ -44,5 +45,5 @@ def get_drift_pairs(drift_list, org_batch_size):
      for i in range(len(drift_list)-1):
          batch_size = drift_list[i+1]-drift_list[i-1] + 1  * org_batch_size
          drift_pairs_size.append(batch_size)
-         drift_pairs.append((drift_list[i],drift_list[i+1]))
+         drift_pairs.append((drift_list[i], drift_list[i+1]))
      return drift_pairs_size, drift_pairs
