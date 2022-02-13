@@ -8,7 +8,7 @@ from src.Distance import Distance
 from src.HDDDM_alternative_approach import HDDDM
 from src.Discretize import Discretizer
 from src.util import visualize_drift, visualize_magnitude
-
+from tqdm import tqdm
 
 def discretize_data(data, categorical_variables, nr_of_bins):
     data2 = data.copy()
@@ -24,7 +24,12 @@ def load_dataset(path):
     return data, dataset_name
 
 def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = False, save_figures=False, dataset_name = ''):
+    warning_list = []
+    drift_list  = []
+    magnitude_list = []
+
     for nr_of_batches in nr_of_batches_list:
+        print('Running experiment with window size: ', len(data)/nr_of_batches)
         Batch = np.array_split(data, nr_of_batches)  # Batching the dataset.
 
         if model is not None:
@@ -44,9 +49,9 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
 
         Drift = np.array_split(binned_data, nr_of_batches)  # Always use the discretized data for drift detection!
         Drift_ref = Drift[0]
+        detector.hard_reset()
 
-        for i in range(1, nr_of_batches):
-            print('Processing batch: ', i)
+        for i in tqdm(range(1, nr_of_batches)):
             X_batch = Batch[i].iloc[:, 0:-1]
             y_batch = Batch[i].iloc[:, -1]
             Drift_batch = Drift[i]
@@ -75,7 +80,7 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
             else:
                 Drift_ref = pd.concat([Drift_ref, Drift_batch])  # Extend the reference batch.
 
-        # print(f'\nOverview of Detected warnings: {warning}')
+        print(f'\nOverview of Detected warnings: {warning}')
         print(f'\nOverview of Detected drifts in batches: {drift}')
         print(f'\nOverview of Distance magnitudes: {magnitude}')
 
@@ -91,5 +96,7 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
                 fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "mag" + str(posterior)
                 mag_fig.savefig('out/' + fig_name + '.png')
 
-        return warning, drift, magnitude
-
+        warning_list.append(warning)
+        drift_list.append(drift)
+        magnitude_list.append(magnitude)
+    return

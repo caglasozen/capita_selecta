@@ -19,7 +19,7 @@ if __name__ == '__main__':
     categorical_variables = []  # Defines which variables are categorical. DO NOT include target variable!
     to_keep = "all"  # Variables to include in drift computation. Use statement below to specify variables.
     # to_keep = categorical_variables
-    POSTERIOR = True
+    POSTERIOR = False
     model = ensemble.GradientBoostingClassifier()  # Learner to be used during training
     distance = Distance().hellinger_dist  # Distance metric to be used during drift detection
     nr_of_batches = [1000, 500, 250, 100, 50]

@@ -33,6 +33,21 @@ class HDDDM(BaseDriftDetector):
         self.sum_eps = abs(self.dist_diff)
         self.sum_eps_sd = (abs(self.dist_diff) - self.epsilon_hat) ** 2
 
+    def hard_reset(self):
+        """
+        Resets the change detector parameters.
+        """
+        self.prev_dist = 0
+        self.lambda_ = 0
+        self.batch = 1
+        self.sum_eps = 0
+        self.sum_eps_sd = 0
+        self.dist_diff = 0
+        self.epsilon_hat = 0
+        self.sigma_hat = 0
+        self.beta_hat = 0
+        self.reset()
+
     def generate_prop_dic(self, window, union_values):
         """
         Generates dictionaries with proportions per feature. This enables distance computation between windows.

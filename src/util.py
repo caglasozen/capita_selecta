@@ -15,7 +15,6 @@ def visualize_drift(acc, drift, warn, nr_of_batches, len_dataset):
     ax.plot(x, acc, lw=2, label='accuracy')
 
     ax.legend()
-    plt.title("Hyperplane - High (10%) Gradual Drift")
     plt.show()
     return fig
 
@@ -27,7 +26,6 @@ def visualize_magnitude(magn):
     ax.set_ylabel("Magnitude")
 
     ax.legend()
-    plt.title("Hyperplane - High (10%) Gradual Drift")
     plt.show()
     return fig
 
@@ -43,7 +41,7 @@ def get_drift_pairs(drift_list, org_batch_size):
      drift_pairs_size = []
      drift_pairs = []
      for i in range(len(drift_list)-1):
-         batch_size = drift_list[i+1]-drift_list[i-1] + 1  * org_batch_size
+         batch_size = (drift_list[i+1]-drift_list[i-1] + 1)  * org_batch_size
          drift_pairs_size.append(batch_size)
          drift_pairs.append((drift_list[i], drift_list[i+1]))
      return drift_pairs_size, drift_pairs
