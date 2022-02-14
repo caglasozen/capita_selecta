@@ -5,7 +5,7 @@ from src.Distance import Distance
 from src.HDDDM_alternative_approach import HDDDM
 from src.Discretize import Discretizer
 from src.HDDDM_run import run_hdddm, load_dataset, discretize_data
-
+from src.ProbabilityTypes import Probabilities
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -19,14 +19,14 @@ if __name__ == '__main__':
     categorical_variables = []  # Defines which variables are categorical. DO NOT include target variable!
     to_keep = "all"  # Variables to include in drift computation. Use statement below to specify variables.
     # to_keep = categorical_variables
-    POSTERIOR = False
+    prob_type = Probabilities.REGULAR
     model = ensemble.GradientBoostingClassifier()  # Learner to be used during training
     distance = Distance().hellinger_dist  # Distance metric to be used during drift detection
     nr_of_batches = [1000, 500, 250, 100, 50]
     #nr_of_batches = [500]
 
     #Dataset path
-    path = 'data/SEA_Abrupt_high.csv'
+    path = 'data/SEA_Abrupt_low.csv'
     target = 'y'
     data, dataset_name = load_dataset(path)
     binned_data, numerical_cols = discretize_data(data, categorical_variables, nr_of_bins)
@@ -37,7 +37,7 @@ if __name__ == '__main__':
     detector = HDDDM(distance, to_keep, target, gamma)
 
     warning, drift, magnitude = run_hdddm(detector, nr_of_batches, data, binned_data, warn_ratio, model=model,
-                                          visualize=True, posterior=POSTERIOR, save_figures=True,
+                                          visualize=True, posterior=Probabilities.REGULAR, save_figures=True,
                                           dataset_name=dataset_name)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

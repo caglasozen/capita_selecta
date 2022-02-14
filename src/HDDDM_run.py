@@ -9,6 +9,7 @@ from src.HDDDM_alternative_approach import HDDDM
 from src.Discretize import Discretizer
 from src.util import visualize_drift, visualize_magnitude
 from tqdm import tqdm
+from src.ProbabilityTypes import Probabilities
 
 def discretize_data(data, categorical_variables, nr_of_bins):
     data2 = data.copy()
@@ -23,7 +24,7 @@ def load_dataset(path):
     dataset_name = path[path.rfind('/') + 1:path.rfind('.')]
     return data, dataset_name
 
-def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = False, save_figures=False, dataset_name = ''):
+def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = Probabilities.REGULAR, save_figures=False, dataset_name = ''):
     warning_list = []
     drift_list  = []
     magnitude_list = []
@@ -88,12 +89,12 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
             if model is not None:
                 drift_fig = visualize_drift(accuracy, drift, warning, nr_of_batches, len(X_train))
                 if save_figures:
-                    fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "drift"+ str(posterior)
+                    fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "drift_" + str(posterior.name)
                     drift_fig.savefig('out/' + fig_name + '.png')
 
             mag_fig = visualize_magnitude(magnitude)
             if save_figures:
-                fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "mag" + str(posterior)
+                fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "mag_" + str(posterior.name)
                 mag_fig.savefig('out/' + fig_name + '.png')
 
         warning_list.append(warning)

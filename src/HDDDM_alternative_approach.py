@@ -1,6 +1,6 @@
 from math import sqrt
 from skmultiflow.drift_detection.base_drift_detector import BaseDriftDetector
-
+from src.ProbabilityTypes import Probabilities
 
 class HDDDM(BaseDriftDetector):
     """"
@@ -75,7 +75,7 @@ class HDDDM(BaseDriftDetector):
                 dic.update({key: 0})
         return dic
 
-    def windows_distance(self, ref_window, current_window, posterior = False):
+    def windows_distance(self, ref_window, current_window, posterior = Probabilities.REGULAR):
         """
         Computes the distance between both windows. This approach conditions the distances based on target class values
         :param ref_window: Reference window
@@ -90,7 +90,7 @@ class HDDDM(BaseDriftDetector):
             ref_tmp = ref_window[ref_window[self.target] == i] #all x values for this class P(x,y=i)
             curr_tmp = current_window[current_window[self.target] == i]
 
-            if not posterior:
+            if not posterior == Probabilities.POSTERIOR:
                 prob_ref = len(ref_tmp) / len(ref_window)  # Compute proportions of the class value in the batch
                 prob_curr = len(curr_tmp) / len(current_window)
             else:
@@ -122,30 +122,32 @@ class HDDDM(BaseDriftDetector):
                 current_dic = self.generate_prop_dic(curr_tmp[feature], union_values)
 
                 actual_dist += self.distance(ref_dic, current_dic)
-                if posterior:
+                if posterior == Probabilities.POSTERIOR:
                     prob_ref += len(ref_lst_values) / len(ref_tmp)  # Compute proportions of the class value in the batch
                     prob_curr += len(current_lst_values) / len(curr_tmp)
-
+                elif posterior == Probabilities.REGULAR:
                     # APPROACH 2 - FROM PAPER BY SARNELLE, SANCHEZ ET AL.
                     # http://users.rowan.edu/~polikar/research/publications/ijcnn15.pdf
 
-                    #actual_dist /= len(self.features)
-                    #actual_dist_lst.append(actual_dist)
+                    actual_dist /= len(self.features)
+                    actual_dist_lst.append(actual_dist)
 
-            #final_dist = max(actual_dist_lst)
 
                 # APPROACH 3 - FROM DRIFT MAPS
                 # https://link.springer.com/article/10.1007/s10618-018-0554-1
+            if posterior == Probabilities.MARGINAL:
+                actual_dist = actual_dist * (prob_curr + prob_ref) / 2
+                actual_dist_lst.append(actual_dist)
 
-            actual_dist = actual_dist * (prob_curr + prob_ref) / 2
-            actual_dist_lst.append(actual_dist)
-
-            final_dist = sum(actual_dist_lst)
+            if posterior == Probabilities.MARGINAL or posterior == Probabilities.POSTERIOR:
+                final_dist = sum(actual_dist_lst)
+            elif posterior == Probabilities.REGULAR:
+                final_dist = max(actual_dist_lst)
 
 
         return final_dist
 
-    def update(self, ref_window, current_window, warn_ratio, posterior=False):
+    def update(self, ref_window, current_window, warn_ratio, posterior=Probabilities.REGULAR):
         """
         Updating the drift detector per batch
         :param ref_window: Reference window
