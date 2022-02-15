@@ -26,7 +26,7 @@ if __name__ == '__main__':
     #nr_of_batches = [500]
 
     #Dataset path
-    path = 'data/SEA_Abrupt_low.csv'
+    path = 'data/Agrawal_mixed.csv'
     target = 'y'
     data, dataset_name = load_dataset(path)
     binned_data, numerical_cols = discretize_data(data, categorical_variables, nr_of_bins)

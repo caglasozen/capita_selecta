@@ -100,4 +100,4 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
         warning_list.append(warning)
         drift_list.append(drift)
         magnitude_list.append(magnitude)
-    return
+    return warning_list, drift_list, magnitude_list
