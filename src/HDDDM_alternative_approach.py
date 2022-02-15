@@ -135,11 +135,10 @@ class HDDDM(BaseDriftDetector):
 
                 # APPROACH 3 - FROM DRIFT MAPS
                 # https://link.springer.com/article/10.1007/s10618-018-0554-1
-            if posterior == Probabilities.MARGINAL:
-                actual_dist = actual_dist * (prob_curr + prob_ref) / 2
-                actual_dist_lst.append(actual_dist)
 
             if posterior == Probabilities.MARGINAL or posterior == Probabilities.POSTERIOR:
+                actual_dist = actual_dist * (prob_curr + prob_ref) / 2
+                actual_dist_lst.append(actual_dist)
                 final_dist = sum(actual_dist_lst)
             elif posterior == Probabilities.REGULAR:
                 final_dist = max(actual_dist_lst)
