@@ -23,10 +23,10 @@ if __name__ == '__main__':
     model = ensemble.GradientBoostingClassifier()  # Learner to be used during training
     distance = Distance().hellinger_dist  # Distance metric to be used during drift detection
     nr_of_batches = [1000, 500, 250, 100, 50]
-    #nr_of_batches = [500]
+    HIGH_DRIFT_THRESHOLD = 0.05
 
     #Dataset path
-    path = 'data/SEA_Abrupt_low.csv'
+    path = 'data/SEA_Abrupt_high.csv'
     target = 'y'
     data, dataset_name = load_dataset(path)
     binned_data, numerical_cols = discretize_data(data, categorical_variables, nr_of_bins)
@@ -36,8 +36,8 @@ if __name__ == '__main__':
 
     detector = HDDDM(distance, to_keep, target, gamma)
 
-    warning, drift, magnitude = run_hdddm(detector, nr_of_batches, data, binned_data, warn_ratio, model=model,
+    warning, drift, magnitude, drift_type = run_hdddm(detector, nr_of_batches, data, binned_data, warn_ratio, model=model,
                                           visualize=True, posterior=prob_type, save_figures=True,
-                                          dataset_name=dataset_name)
+                                          dataset_name=dataset_name, threshold=HIGH_DRIFT_THRESHOLD)
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/

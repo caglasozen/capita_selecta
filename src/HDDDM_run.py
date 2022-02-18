@@ -24,7 +24,7 @@ def load_dataset(path):
     dataset_name = path[path.rfind('/') + 1:path.rfind('.')]
     return data, dataset_name
 
-def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = Probabilities.REGULAR, save_figures=False, dataset_name = ''):
+def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = Probabilities.REGULAR, save_figures=False, dataset_name = '', threshold = 0.05):
     warning_list = []
     drift_list  = []
     magnitude_list = []
@@ -47,6 +47,7 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
         warning = []    # Stores detected warnings prior to drift.
         accuracy = []   # Stores model accuracy per batch.
         magnitude = []  # Stores the magnitude of change between batches.
+        drift_type = [] # Stores drift type according to magnitude
 
         Drift = np.array_split(binned_data, nr_of_batches)  # Always use the discretized data for drift detection!
         Drift_ref = Drift[0]
@@ -75,6 +76,8 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
                 # print(f'Drift detected in batch {i} with drift magnitude {drift_magnitude}')
                 detector.reset()
 
+                drift_type.append('High') if drift_magnitude > threshold else drift_type.append('Low')
+
                 if model is not None:
                     model = model.fit(X_batch, y_batch)  # Retrain the model
 
@@ -84,6 +87,8 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
         print(f'\nOverview of Detected warnings: {warning}')
         print(f'\nOverview of Detected drifts in batches: {drift}')
         print(f'\nOverview of Distance magnitudes: {magnitude}')
+        print(f'\nOverview of Drift Types: {drift_type}')
+
 
         if visualize:
             if model is not None:
@@ -100,4 +105,4 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
         warning_list.append(warning)
         drift_list.append(drift)
         magnitude_list.append(magnitude)
-    return warning_list, drift_list, magnitude_list
+    return warning_list, drift_list, magnitude_list, drift_type

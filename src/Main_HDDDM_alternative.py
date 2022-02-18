@@ -48,7 +48,7 @@ else:
 nr_of_batches = [500]
 original_batch_size = nr_of_batches[0]
 
-warning, drift, magnitude = run_hdddm(detector, nr_of_batches, data, binned_data, warn_ratio, model=model, visualize=True, posterior=POSTERIOR, save_figures= True, dataset_name=dataset_name)
+warning, drift, magnitude, drift_type = run_hdddm(detector, nr_of_batches, data, binned_data, warn_ratio, model=model, visualize=True, posterior=POSTERIOR, save_figures= True, dataset_name=dataset_name)
 
 # # GRADUAL DRIFT TEST
 
