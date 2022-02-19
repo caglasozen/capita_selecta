@@ -76,7 +76,7 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
                 # print(f'Drift detected in batch {i} with drift magnitude {drift_magnitude}')
                 detector.reset()
 
-                drift_type.append('High') if drift_magnitude > threshold else drift_type.append('Low')
+                drift_type.append('HIGH') if drift_magnitude > threshold else drift_type.append('LOW')
 
                 if model is not None:
                     model = model.fit(X_batch, y_batch)  # Retrain the model
@@ -92,7 +92,7 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
 
         if visualize:
             if model is not None:
-                drift_fig = visualize_drift(accuracy, drift, warning, nr_of_batches, len(X_train))
+                drift_fig = visualize_drift(accuracy, drift, warning, nr_of_batches, len(X_train), drift_type)
                 if save_figures:
                     fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "drift_" + str(posterior.name)
                     drift_fig.savefig('out/' + fig_name + '.png')

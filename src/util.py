@@ -4,14 +4,23 @@ import pandas as pd
 
 ##Visualization Functions
 
-def visualize_drift(acc, drift, warn, nr_of_batches, len_dataset):
+def visualize_drift(acc, drift, warn, nr_of_batches, len_dataset, drift_type = None):
     fig, ax = plt.subplots()
     x = np.linspace(nr_of_batches, len_dataset*nr_of_batches, num = nr_of_batches - 1)
     ax.set_xlabel('index')
     ax.set_ylabel('accuracy')
 
     plt.vlines(x=[value*len_dataset for value in warn], ymin=0, ymax=1, colors='g', linestyles=':', label='warnings')
-    plt.vlines(x=[value*len_dataset for value in drift], ymin=0, ymax=1, colors='r', linestyles='-', label='drifts')
+
+    if drift_type is not None:
+        high_drift = [drift[i] for i, item in enumerate(drift_type) if item == "HIGH"]
+        low_drift = [drift[i] for i, item in enumerate(drift_type) if item == "LOW"]
+
+        plt.vlines(x=[value*len_dataset for value in high_drift], ymin=0, ymax=1, colors='r', linestyles='-', label='high_drifts')
+        plt.vlines(x=[value*len_dataset for value in low_drift], ymin=0, ymax=1, colors='m', linestyles='-', label='low_drifts')
+
+    else:
+        plt.vlines(x=[value*len_dataset for value in drift], ymin=0, ymax=1, colors='r', linestyles='-', label='drifts')
     ax.plot(x, acc, lw=2, label='accuracy')
 
     ax.legend()
