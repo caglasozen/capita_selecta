@@ -1,3 +1,10 @@
+"""
+@Author: Thomas Boot
+@Author: Edited by Cagla Sozen
+@Date: 21/02/2022
+!!Warning: Implementation of equal_size is not correct
+"""
+
 import numpy as np
 import pandas as pd
 
@@ -32,13 +39,22 @@ class Discretizer:
 
         return self
 
-    def equalsize(self, col):
-
+    def equal_size(self, col):
+        """
+        !!Warning: Implementation of equal_size is not correct, does the same as equal_quantile
+        Split the column into equal size bins.
+        :param col: Column to process
+        :return: Binned column
+        """
         bin_col, self.bins_output[col.name] = pd.cut(col, self.n_bins, retbins=True, duplicates='drop')
         return bin_col
 
-    def equalquantile(self, col):
-
+    def equal_quantile(self, col):
+        """
+        Split the column into equal quantile bins.
+        :param col: Column to process
+        :return: Binned column
+        """
         bin_col, self.bins_output[col.name] = pd.qcut(col, self.n_bins, retbins=True, duplicates='drop')
         return bin_col
 
@@ -53,9 +69,9 @@ class Discretizer:
         self.n_bins = n_bins
         self.bins_output = {}
         if self.method == "equalsize":
-            data[self.numerical_cols] = data[self.numerical_cols].apply(self.equalsize,
+            data[self.numerical_cols] = data[self.numerical_cols].apply(self.equal_size,
                                                                         axis=0)  # apply function to each column
         if self.method == "equalquantile":
-            data[self.numerical_cols] = data[self.numerical_cols].apply(self.equalquantile, axis=0)
+            data[self.numerical_cols] = data[self.numerical_cols].apply(self.equal_quantile, axis=0)
 
         return data, self.bins_output

@@ -1,6 +1,27 @@
+"""
+@Author: Thomas Boot
+@Author: Cagla Sozen
+@Date: 21/02/2021
+"""
+import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-import pandas as pd
+from src.Discretize import Discretizer
+
+## Dataset Utility Functions
+
+def discretize_data(data, categorical_variables, nr_of_bins):
+    data2 = data.copy()
+    discretize = Discretizer("equalquantile")  # Choose either "equalquantile" or "equalsize"
+    discretize.fit(data2, None, to_ignore=categorical_variables)  # Determine which variables need discretization.
+    numerical_cols = discretize.numerical_cols
+    binned_data, bins_output = discretize.transform(data2, nr_of_bins)  # Bin numerical data.
+    return binned_data, numerical_cols
+
+def load_dataset(path):
+    data = pd.read_csv(path, delimiter=',', index_col=0)
+    dataset_name = path[path.rfind('/') + 1:path.rfind('.')]
+    return data, dataset_name
 
 ##Visualization Functions
 

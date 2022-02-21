@@ -1,4 +1,9 @@
 from math import sqrt, log
+"""
+@Author: Thomas Boot
+@Credit: IdrissMghabbar @IdrissMg
+@Date: 12/2021
+"""
 
 class Distance:
 

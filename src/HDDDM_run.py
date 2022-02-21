@@ -1,30 +1,29 @@
+"""
+@Author: Cagla Sozen
+@Credit : Thomas Boot
+@Date: 21/02/2021
+"""
 import sklearn.metrics
-import pandas as pd
-import numpy as np
-from math import sqrt, floor
-from matplotlib import pyplot as plt
-from sklearn import ensemble
-from src.Distance import Distance
-from src.HDDDM_alternative_approach import HDDDM
-from src.Discretize import Discretizer
-from src.util import visualize_drift, visualize_magnitude
 from tqdm import tqdm
 from src.ProbabilityTypes import Probabilities
+from src.util import *
 
-def discretize_data(data, categorical_variables, nr_of_bins):
-    data2 = data.copy()
-    discretize = Discretizer("equalquantile")  # Choose either "equalquantile" or "equalsize"
-    discretize.fit(data2, None, to_ignore=categorical_variables)  # Determine which variables need discretization.
-    numerical_cols = discretize.numerical_cols
-    binned_data, bins_output = discretize.transform(data2, nr_of_bins)  # Bin numerical data.
-    return binned_data, numerical_cols
+def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, prob_type = Probabilities.REGULAR, save_figures=False, dataset_name = '', threshold = 0.05):
+    """
 
-def load_dataset(path):
-    data = pd.read_csv(path, delimiter=',', index_col=0)
-    dataset_name = path[path.rfind('/') + 1:path.rfind('.')]
-    return data, dataset_name
-
-def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  model=None, visualize = False, posterior = Probabilities.REGULAR, save_figures=False, dataset_name = '', threshold = 0.05):
+    :param detector:
+    :param nr_of_batches_list:
+    :param data:
+    :param binned_data:
+    :param warn_ratio:
+    :param model:
+    :param visualize:
+    :param prob_type:
+    :param save_figures:
+    :param dataset_name:
+    :param threshold:
+    :return:
+    """
     warning_list = []
     drift_list  = []
     magnitude_list = []
@@ -63,8 +62,8 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
                 acc = sklearn.metrics.accuracy_score(y_batch, y_pred)
                 accuracy.append(acc)
 
-            detector.update(Drift_ref, Drift_batch, warn_ratio, posterior=posterior)
-            drift_magnitude = detector.windows_distance(Drift_ref, Drift_batch, posterior=posterior)
+            detector.update(Drift_ref, Drift_batch, warn_ratio, prob_type=prob_type)
+            drift_magnitude = detector.windows_distance(Drift_ref, Drift_batch, prob_type=prob_type)
             magnitude.append(drift_magnitude)
 
             if detector.detected_warning_zone():
@@ -94,12 +93,12 @@ def run_hdddm(detector, nr_of_batches_list, data, binned_data, warn_ratio,  mode
             if model is not None:
                 drift_fig = visualize_drift(accuracy, drift, warning, nr_of_batches, len(X_train), drift_type)
                 if save_figures:
-                    fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "drift_" + str(posterior.name)
+                    fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "drift_" + str(prob_type.name)
                     drift_fig.savefig('out/' + fig_name + '.png')
 
             mag_fig = visualize_magnitude(magnitude)
             if save_figures:
-                fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "mag_" + str(posterior.name)
+                fig_name = dataset_name + "_window_size_" + str(nr_of_batches) + "_" + "mag_" + str(prob_type.name)
                 mag_fig.savefig('out/' + fig_name + '.png')
 
         warning_list.append(warning)

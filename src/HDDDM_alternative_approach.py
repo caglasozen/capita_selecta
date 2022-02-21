@@ -1,6 +1,13 @@
+"""
+@Author: Thomas Boot
+@Author: Cagla Sozen
+@Date: 21/02/2021
+"""
+
 from math import sqrt
 from skmultiflow.drift_detection.base_drift_detector import BaseDriftDetector
 from src.ProbabilityTypes import Probabilities
+import pandas as pd
 
 class HDDDM(BaseDriftDetector):
     """"
@@ -35,7 +42,7 @@ class HDDDM(BaseDriftDetector):
 
     def hard_reset(self):
         """
-        Resets the change detector parameters.
+        Resets the change detector parameters for running the detector again.
         """
         self.prev_dist = 0
         self.lambda_ = 0
@@ -65,17 +72,8 @@ class HDDDM(BaseDriftDetector):
                 dic.update({key: 0})
         return dic
 
-    def generate_dic(self, window, union_values):
-        dic = {}
-        n = window.shape[0]
-        for key in union_values:
-            if key in window.keys().unique():
-                dic.update({key: window.loc[key] / n})
-            else:
-                dic.update({key: 0})
-        return dic
 
-    def windows_distance(self, ref_window, current_window, posterior = Probabilities.REGULAR):
+    def windows_distance(self, ref_window, current_window, prob_type = Probabilities.REGULAR):
         """
         Computes the distance between both windows. This approach conditions the distances based on target class values
         :param ref_window: Reference window
@@ -90,14 +88,15 @@ class HDDDM(BaseDriftDetector):
             ref_tmp = ref_window[ref_window[self.target] == i] #all x values for this class P(x,y=i)
             curr_tmp = current_window[current_window[self.target] == i]
 
-            if not posterior == Probabilities.POSTERIOR:
+            if not prob_type == Probabilities.POSTERIOR:
                 prob_ref = len(ref_tmp) / len(ref_window)  # Compute proportions of the class value in the batch
                 prob_curr = len(curr_tmp) / len(current_window)
             else:
                 prob_ref = 0
                 prob_curr = 0
-
-            #doesn't really work, too slow :(
+            
+############## POSTERIOR PROBABILITY CALCULATION WITH JOINT ATTRIBUTES #################################################
+                ##doesn't really work, too slow :(
 
                 # ref_x_vals = ref_tmp.value_counts(self.features) #P(x) array
                 # curr_x_vals = curr_tmp.value_counts(self.features)
@@ -114,6 +113,9 @@ class HDDDM(BaseDriftDetector):
                 # current_dic = self.generate_dic(curr_x_vals, ref_val_list)
                 #
                 # actual_dist += self.distance(ref_dic, current_dic)
+
+########################################################################################################################
+            
             for feature in self.features:
                 ref_lst_values = ref_tmp[feature].unique()
                 current_lst_values = curr_tmp[feature].unique()
@@ -122,31 +124,24 @@ class HDDDM(BaseDriftDetector):
                 current_dic = self.generate_prop_dic(curr_tmp[feature], union_values)
 
                 actual_dist += self.distance(ref_dic, current_dic)
-                if posterior == Probabilities.POSTERIOR:
+                if prob_type == Probabilities.POSTERIOR:
                     prob_ref += len(ref_lst_values) / len(ref_tmp)  # Compute proportions of the class value in the batch
                     prob_curr += len(current_lst_values) / len(curr_tmp)
-                elif posterior == Probabilities.REGULAR:
-                    # APPROACH 2 - FROM PAPER BY SARNELLE, SANCHEZ ET AL.
-                    # http://users.rowan.edu/~polikar/research/publications/ijcnn15.pdf
-
+                elif prob_type == Probabilities.REGULAR:
                     actual_dist /= len(self.features)
                     actual_dist_lst.append(actual_dist)
 
-
-                # APPROACH 3 - FROM DRIFT MAPS
-                # https://link.springer.com/article/10.1007/s10618-018-0554-1
-
-            if posterior == Probabilities.MARGINAL or posterior == Probabilities.POSTERIOR:
+            if prob_type == Probabilities.MARGINAL or prob_type == Probabilities.POSTERIOR:
                 actual_dist = actual_dist * (prob_curr + prob_ref) / 2
                 actual_dist_lst.append(actual_dist)
                 final_dist = sum(actual_dist_lst)
-            elif posterior == Probabilities.REGULAR:
+            elif prob_type == Probabilities.REGULAR:
                 final_dist = max(actual_dist_lst)
 
 
         return final_dist
 
-    def update(self, ref_window, current_window, warn_ratio, posterior=Probabilities.REGULAR):
+    def update(self, ref_window, current_window, warn_ratio, prob_type=Probabilities.REGULAR):
         """
         Updating the drift detector per batch
         :param ref_window: Reference window
@@ -161,7 +156,7 @@ class HDDDM(BaseDriftDetector):
         self.in_concept_change = False
         self.in_warning_zone = False
 
-        actual_dist = self.windows_distance(ref_window, current_window, posterior)
+        actual_dist = self.windows_distance(ref_window, current_window, prob_type)
 
         self.dist_diff = actual_dist - self.prev_dist
 
@@ -186,6 +181,7 @@ class HDDDM(BaseDriftDetector):
 
         self.prev_dist = actual_dist
         self.batch += 1
+
 
     def add_element(self, input_value):
         """
