@@ -1,0 +1,13 @@
+numpy
+pandas
+Pillow==8.4.0
+pyparsing
+python-dateutil
+pytz==2021.3
+river
+scikit-learn
+scikit-multiflow
+scipy
+sip==4.19.13
+tornado
+tqdm 
