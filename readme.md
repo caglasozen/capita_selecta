@@ -1,5 +1,7 @@
 # READ ME
 
+In context of online learning data comes in streams and hereby, one of the biggest challenges that a model faces is to be able preserve its optimality. Real-world data often comes from non-stationary environments and evolves over time, leading to a change in its distribution. This phenomenon is called concept drift. In certain cases, concept drift might be particularly disruptive to the optimality of Machine Learning systems. Once the model becomes sub-optimal, it needs to be re-configured. For an improved re-configuration process, understanding and quantifying drift is essential. Hereby, this research is focused on analysing and quantifying drift using Hellinger Distance Based Drift Detection. Extending previous work of a fellow student Thomas Boot, class drift is analyzed using posterior class probabilities and the effect of window size to the accuracy of drift detection and measurement is explored. According to the experiment results, an abrupt drift classification method is proposed according to the magnitude of the detected drift. Code developed for this project can be used as a library for drift analysis and classification with small improvements.
+
 ## Requirements
 
 This repository uses Python 3.9. Dependencies required by this project can be installed via
